@@ -1,0 +1,157 @@
+PROBLEM STATEMENT:
+You are consulting for a manufacturer that ships to distributors all over the country. For each
+of the next n weeks they have a projected supply, s[i], of merchandise (measured in pounds)
+which has to be shipped.
+
+Each week's supply can be shipped by one of two different companies. Company A charges
+r dollars per pound, Company B charges a
+at rate of c dollars per week but requires a
+contract for exactly four consecutive weeks of shipments. You should create a polynomial time
+algorithm that chooses a shipping company for each of the n weeks so that your total shipping
+cost is minimized.
+
+Example 1:
+Suppose r = 1 and c = 10 and the projected supply in pounds is: 11; 9; 9; 12; 12; 13; 12; 9; 9; 11.
+The optimal schedule would use company A for thefirst three weeks, B for the next four weeks
+and A again for the last three weeks for a total cost of 98.
+Example 2:
+Suppose r = 1 and c = 10 and the projected supply in pounds is: 9; 10; 11; 12; 12; 11; 10; 9; 12.
+The optimal schedule would use Company A for the first week and Company B for the last
+eight weeks for a total cost of 89.
+Note your algorithm must work in all cases but these examples are designed to illustrate a
+couple of the trickier cases.
+
+
+SOLUTION:
+Overview:
+  ● LEAST-EXPENSIVE-SCHEDULE takes as inputs prices c and r, integer n, and
+    shipping schedule s and outputs character array S, representing the
+    appropriate company selection each of the n weeks to minimize shipping
+    costs.
+
+Variables Exclusive to Pseudocode:
+  ● $: An array of numbers representing the minimum cost of shipping up to the
+    week indexed
+  ● Comp: An array of characters representing the optimal selection between
+    companies A and B in order to minimize cost at a particular week.
+    ○ (i.e. Comp[i] = A, means at week i means we should select company A
+    in order to minimize costs
+  ● S: S[1...n] will be an array of characters that represents the proper shipping
+    schedule in order to minimize cost.
+      ○ (i.e. S= [A, B, B, B, B, A] means the proper shipping schedule is to ship
+        with company A on weeks 1 and 6, and company B on weeks 2,3,4,
+        and 5.)
+
+Pseudocode:
+1 LEAST-EXPENSIVE-SCHEDULE(c,r,n,s)
+2    Let $[0..n] be a new zero-array of numbers
+3    Let Comp[0..n] be a new empty-array of characters
+4    Let S[1..n] be a new empty-array of characters
+5    for i=1 to n
+6      if i < 4
+7        $[i] = r*s[i] + $[i-1]
+8         Comp[i] = A
+9       else
+10        q = r*s[i] + $[i-1]
+11       Comp[i] = A
+12       if q > 4*c + $[i-4]
+13         q = 4*c + $[i-4]
+14          Comp[i] = B
+15         $[i] = q
+16    for j=n down to 1:
+17      if Comp[j] == A
+18        S[j] = A
+19    else
+20      S[j, j-1, j-1, j-3] = [B, B, B, B]
+21      j -= 3
+22   return S
+
+
+Justification (via loop invariant):
+    Loop Invariant for first 'for' loop:
+      ● At the beginning of each iteration:
+          ○ (I) $[i-1] equals the minimum cost of shipping up to week i-1,
+            and
+          ○ (II) Comp[i-1] represents the optimal shipping company selection
+            of week i-1 in order to minimize costs.
+
+Initialization:
+    ● i=1 -> i-1 = 0
+    ● $[0] = 0
+    ● Comp[0] = empty
+
+Maintenance:
+    ● ASSUME at the start of iteration k:
+      ○ $[k-1] = minimum cost of shipping up to week k-1
+      ○ Comp[k-1] represents the optimal shipping company selection at
+        week k-1 in order to minimize shipping costs
+    ● MUST PROVE at the start of iteration k+1:
+        ○ $[k] = minimum cost of shipping up to week k
+        ○ Comp[k] represents the optimal shipping company selection at
+          week k in order to minimize costs
+
+  Case 1: k < 4:
+    ● Because you can only use company A for first 3 weeks, $[k] =
+      r*(s[1]+...+s[k]) -> $[k-1] is the minimial cost for up to weeks
+    ● Since A is the only choice Comp[k-1] must equal A
+
+  Case 2: k >= 4
+    ● Proof of (I):
+      ○ q = min((r*s[k]+$[k-1]), (4*c+$[k-4]))
+      ○ r*s[k] = cost to ship with A on week k
+      ○ $[k-1] = min cost to ship up to week k-1
+      ○ Thus, (r*s[k]+$[k-1]) =min cost to ship with A on week k
+      ○ 4*c = cost of contract with B for 4 weeks
+      ○ $[k-4] = min cost to ship up to week k-4
+      ○ Thus, (4*c+$[k-4]) = min cost to ship with B on week k
+      ○ Thus, q = min cost between selecting A or B to ship on
+        week k
+      ○ $[k] = q -> $[k] = min cost between selecting A or B to
+        ship on week k
+
+    ● Proof of (II):
+      ○ If (r*s[k]+$[k-1]) <= (4*c+$[k-4]) -> cheaper (or as
+      cheap) to ship with A on week k
+      ○ else, cheaper to ship with B
+      ○ Also if (r*s[k]+$[k-1]) <= (4*c+$[k-4]) -> Comp[k] = A
+      ○ else, Comp[k] = B
+      ○ Thus, Comp[k] represents the optimal shipping company
+      selection at week k in order to minimize costs
+
+Termination:
+  ● loop terminates at k = n+1
+  ● By maintenance step:
+    ○ $[k-1] = $[n] = minimum cost to ship through week n
+    ○ Comp[k-1] = Comp[n] = optimal shipping company selection at
+      week k in order to minimize shipping costs
+
+Proof that S represents the optimal shipping schedule:
+  ● loop starts at j=n
+  ● If Comp[j] = A:
+    ○ A is the optimal selection to minimize costs at week j
+    ○ So S[j] = A
+  ● If Comp[j] = B
+    ○ B is the optimal company for week j
+    ○ B requires a 4-week contract
+    ○ So, S[j, j-1, j-2, j-3] = [B, B, B, B]
+    ○ Then, j -= 3 so that the next check for the optimal schedule is 4
+      weeks prior to the last check
+
+
+Runtime Analysis:
+  ● Let $[0..n] be a new zero-array of numbers: O(n) = O(1)
+  ● Let Comp[0..n] be a new empty-array of characters: O(n) = O(1)
+  ● Let S[1..n] be a new empty-array of characters: O(n) = O(1)
+  ● for i=1 to n: O(n) = O(n)
+    ○ Since all operations within this for loop are O(1), all contents of for loop
+      amount to O(1)
+  ● for j=1 to n: O(n) = O(n)
+    ○ Since all operations within this for loop are O(1), all contents of for loop
+      amount to O(1)
+  ● return S: O(n) = O(1)
+  ● THUS, total Big-O runtime:
+    ○ O(n) = O(1)+O(1)+O(1)+O(nO(1))+O(n(O(1))= O(1)+O(n) = O(n)
+
+
+
+    
