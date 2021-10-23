@@ -1,0 +1,63 @@
+PROBLEM STATEMENT:
+In chip design, a timing diagram shows the delays that result as signals propagate through the
+circuit. Below is a simple example of such a circuit where we are concerned with the time it takes
+a signal to propagate from the root to the leaves. The weight of an edge represents its length
+and we will assume that the time it takes a signal to reach a leaf from the root is proportional
+to the sum of the edge lengths between those nodes.
+
+First, we want every path from the root to the leaves to have exactly the same distance. In such
+a case the circuit would have what we call zero skew. Moreover, we would like a zero skew circuit
+where the total edge length is minimized (which minimizes the excess wire added to create zero
+skew). The total edge length is the sum of the all of the lengths of all the edges in the graph.
+
+Assume you are given a complete binary tree with n nodes and each edge (u; v) has an associated
+length, len(u; v). I want you to give a dynamic programming algorithm that increases the length
+of certain edges so that the resulting tree has zero skew and the total edge length is minimized.
+Give the running time of your algorithm and justify why it produces a zero skew tree with
+minimum total edge length.
+
+
+SOLUTION:
+
+Overview:
+  ● This method will implement a post-order traversal of the complete binary tree in order to
+    achieve zero-scew and minimize total edge length
+  ● Notation:
+    ○ x.l = left child of node x
+    ○ x.r = right child of node x
+    ○ x.toLeaf = sum of edge lengths from node x to a leaf of the tree
+
+Pseudocode:
+● Let T represent the complete binary tree
+● The initial input to MIN-ZERO-SCEW will be the root of T, and we assume the root is not null
+
+1   MIN-ZERO-SCEW(Node x)
+2     if x is a leaf
+3       x.toLeaf = 0
+4       return
+5   else
+6     MIN-ZERO-SCEW(x.l)
+7     MIN-ZERO-SCEW(x.r)
+8     x.toLeaf = max{(len(x, x.left) + x.left.toLeaf), (len(x, x.right) + x.right.toLeaf)}
+9     len(x,x.l) = x.toLeaf - x.l.toLeaf
+10    len(x,x.r) = x.toLeaf - x.r.toLeaf
+
+Justification:
+  ● If x is a leaf, x.toLeaf = 0
+  ● If x is not a leaf, since we implement a post-order traversal, x.l.toLeaf and x.r.toLeaf are set
+    before x.toLeaf
+  ● Thus, to find the correct x.toLeaf, we compare x’s children’s toLeaf values, add their
+    respective distances to x, then set x.toLeaf to the max of those two values
+  ● Then, to ensure zero-scew we set both len(x,x.l) and len(x,x.r) to the difference between
+    x.toLeaf and x.l.toLeaf, and x.toLeaf and x.r.toLeaf respectively (one of which will not actually
+    change from its original value)
+  ● The total edge length of T is minimized because we are adding the least amount to a single
+    edge connected to x that ensures zero-scew is held
+    ○ For example, if we were to add to an edge connecting x.l to x.l.l children to ensure
+      zero-scew at node x, we would also have to add an equivalent amount to the edge
+      connecting x.l to x.l.r
+
+Runtime Analysis:
+● All non-recursive calls in MIN-ZERO-SCEW are O(n) = O(1)
+● Since we are traversing the tree using post-order traversal recursive calls to MIN-ZEROSCEW take O(n) = O(n)
+● Thus total Big-O runtime of MIN-ZERO-SCEW is: O(n) = O(n)
