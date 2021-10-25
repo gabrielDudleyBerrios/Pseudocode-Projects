@@ -1,0 +1,105 @@
+PROBLEM STATEMENT:
+
+  Suppose we have a social network like Twitter represented by a directed graph. A
+directed edge (u; v) is present in the graph if person v follows person u on Twitter
+(think of the edge as representing the
+ow of information. If v follows u then when
+u tweets, v receives it). What we're trying to do is determine the most famous
+follower of everyone in the graph. For instance, your most famous follower would
+be calculated by determining the most famous person who follows you, or follows
+one of your followers, or follows one of your follower's followers, etc. You may also
+assume that a node follows itself by default as a base case. That way even nodes
+with no followers have a MFF. In simple terms, your most famous follower is the
+most famous person who would see your tweet if all your followers retweeted your
+tweet and all your followers' followers retweeted it, etc.
+
+  More formally, suppose every node, u 2 V , has a unique integer fame rank,
+R(u), in the range 1, 2,..., |V|. Think of this rank as representing each user's
+popularity in terms of how many followers they have. According to Wikipedia,
+Barack Obama is 1 with 129 million followers, Justin Bieber is 2 with 113 million,
+Katy Perry is 3 with 109 million.
+
+  You do not have to calculate the fame rank, just assume each node has
+afield that contains its unique rank.
+
+  For each vertex u in V , let Follow(u) = {v in V, where u -> v} (the notation u -> v
+means that there is a path from u to v). This set is composed of u itself, the people
+who directly follow u, the people who follow the followers of u and so on. Let the
+most famous follower of a node u be represented by MFF(u) which is equal to
+the vertex in Follow(u) whose rank is minimum. In other words MFF(u) is the
+vertex v such that R(v) = min{R(w), where w is in Follow(u)}.
+
+  Give a linear time algorithm to compute MFF(u) for all vertices u 2 V . Justify
+the correctness and running time of your solution.
+
+  Note that Follow(u) is defined above in order to explain MFF(u) but the
+Follow set for each node is not given to you and you cannot compute it in linear
+time. You must compute MFF(u) for each node directly from the given graph.
+
+
+SOLUTION:
+
+Overview:
+  FIND-MFF-DFS utilizes a modified version of depth-first-search to find the most-famous
+follower of a given member of the social network
+
+New Notation:
+  ● u.visited : visited is an attribute augmenting the nodes in V
+    ○ v.visited = false, if node u has not been visited by MFF-DFS-VISIT
+    ○ v.visited = true, if node u has been visited by MFF-DFS-VISIT
+  ● u.pi : set to first known predecessor of u, aka the node that discovers u
+
+Pseudocode:
+FIND-MFF-DFS(G)
+1   for all u in G.V
+2     u.visited = false
+3     MFF(u) = u
+4   for all u in G.V
+5     if u.visited == false
+6       MFF-DFS-VISIT(G,u)
+7   for all u in G.V
+8     u.visited = false
+9     u.pi = nil
+10  for all u in G.V
+11    if u.visited == false
+12    MFF-DFS-VISIT(G,u)
+
+MFF-DFS-VISIT(G,u)
+1   u.visited = true
+2   for all v in G.Adj[u]
+3     if v.visited == false
+4       v.pi = u
+5       MFF-DFS-VISIT(G,v)
+6     else if R(MFF(u)) > R(MFF(v))
+7       MFF(u) = MFF(v)
+8   if R(MFF(u.pi)) > R(MFF(u))
+9     MFF(u.pi) = MFF(u)
+
+
+Justification:
+  ● FIND-MFF-DFS functions similarly to DFS in that it visits the nodes u in G and assigns them a predecessor u.pi
+  ● Now if node u is called in MFF-DFS-VISIT, u.visited = true and we proceed to check all nodes v in u’s adjacency list
+    ○ If v has not been visited v.pi = u, and we call MFF-DFS-VISIT(G,v)
+    ○ If v has been visited we need to update MFF(u) if the Rank of v’s MFF, R(MFF(v)), is less than the Rank of u’s MFF, R(MFF(u))
+      ■ This is sufficient if the MFF(v) is the actual MFF(v), but it could not be in a case we will explain later
+      ■ Also, it is important that we do not call MFF-DFS-VISIT on v if it has been visited because then we could potentially run into the problem of checking every edge exponentially
+  ● Once u has checked all v in G.Adj[u] and the subsequent recursive calls to v in MFF-DFS-VISIT then we update the MFF of u.pi
+  ● The numbers of the nodes in G’ represent that node’s fame rank
+  ● Imagine we run up to line 6 in FIND-MFF-DFS, and our initial call is to node c
+    1. Initially visit c
+    2. From c visit b
+    3. From b visit a
+    4. Then, since c has already been visited, we find that R(MFF(a)) < R(MFF(c)), so we maintain MFF(a) = a
+    5. Then since R(MFF(b)) < R(MFF(a)), we maintain MFF(b) = b
+    6. Finally, since R(MFF(c)) > R(MFF(b)) and MFF(b) = b, we set MFF(c) = b
+  ● Notice, in this example, the MFF(a) = a, but really we want MFF(a) = b, since b follows c, c follows a, and a follows b
+  ● With a second call, however, if a visits c or checks an already visited c, since MFF(c) = b we will correctly set MFF(a) = b
+  ● So, in summary with a second call to MFF-DFS-VISIT in FIND-MFF-DFS, without changing the updated MFFs from the first call to MFF-DFS-VISIT, we properly the MFF of each node in G
+
+Runtime Analysis:
+  ● FIND-MFF-DFS
+    ○ Lines 1-3: O(V)
+    ○ Lines 4-6: same as DFS, so O(V+E)
+    ○ Lines 7-9: O(V)
+    ○ Lines 10-12: O(V+E)
+  ● Thus total runtime is: O(V) + O(V+E) + O(V) + O(V+E) = O(4V + 2E) = O(V+E)

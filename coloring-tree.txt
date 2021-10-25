@@ -1,0 +1,15 @@
+PROBLEM STATEMENT:
+
+Given a graph G = (V;E) a k-coloring of G is a labeling of the vertices with the
+colors c[1], c[2],..., c[k] such that for every edge (u; v) the color of u is different from
+the color of v.
+  (a) Give a linear time algorithm that finds a 2-coloring for a tree.
+  (b) Think about coloring a tree with two colors so that you have the maximum
+      number of nodes colored c1. Prove that your algorithm from part (a), with a
+      minor modication probably, can be used to solve this problem. Be precise.
+  (c) Show an example of a tree, T, that can have at most j nodes colored c1 in
+      a 2-coloring but T can have j0 > j nodes colored c1 in a 3-coloring. Try to
+      find the smallest example of such a tree T.
+(d) Give a linear time dynamic programming algorithm that creates a 3-coloring
+    for a tree such that the maximum number of nodes are colored c1. Justify
+    your answer.
